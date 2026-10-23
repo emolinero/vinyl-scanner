@@ -1,5 +1,5 @@
-const CACHE='vinyl-scanner-v3';
-const ASSETS=['./','./index.html','./styles.css','./app.js?v=3','./manifest.webmanifest'];
+const CACHE='vinyl-scanner-v4';
+const ASSETS=['./','./index.html','./styles.css','./app.js?v=4','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
   self.skipWaiting();
