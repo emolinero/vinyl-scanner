@@ -9,9 +9,9 @@ const els={
   template:document.querySelector('#releaseTemplate')
 };
 
-let reader=null;
+let scanner=null;
 let scanning=false;
-let videoEl=null;
+let lookupInProgress=false;
 
 function setStatus(message,error=false){
   els.status.textContent=message||'';
@@ -76,14 +76,16 @@ function render(releases,barcode){
 }
 
 async function lookup(raw){
+  if(lookupInProgress) return;
   const barcode=normalizeBarcode(raw);
   if(barcode.length<8){
     setStatus('Ingresá un EAN/UPC válido.',true);
     return;
   }
 
+  lookupInProgress=true;
   els.input.value=barcode;
-  stopScanner();
+  await stopScanner();
   els.results.innerHTML='';
   setStatus('Buscando ediciones…');
 
@@ -103,59 +105,72 @@ async function lookup(raw){
   }catch(err){
     console.error(err);
     setStatus('No pude consultar MusicBrainz. Probá de nuevo o usá el ingreso manual.',true);
+  }finally{
+    lookupInProgress=false;
   }
 }
 
 async function startScanner(){
   if(scanning) return;
-  if(!window.ZXing){
+  if(!window.Html5Qrcode){
     setStatus('El lector de cámara no pudo cargarse. Podés ingresar el código manualmente.',true);
     return;
   }
 
   try{
-    reader=new ZXing.BrowserMultiFormatReader();
+    els.reader.innerHTML='';
+    scanner=new Html5Qrcode('reader');
     scanning=true;
     els.scanBtn.hidden=true;
     els.stopBtn.hidden=false;
-    setStatus('Apuntá la cámara al código de barras.');
+    setStatus('Abriendo cámara trasera…');
 
-    els.reader.innerHTML='';
-    videoEl=document.createElement('video');
-    videoEl.setAttribute('playsinline','');
-    videoEl.setAttribute('muted','');
-    videoEl.autoplay=true;
-    videoEl.style.width='100%';
-    videoEl.style.height='100%';
-    videoEl.style.objectFit='cover';
-    els.reader.appendChild(videoEl);
+    const config={
+      fps:12,
+      qrbox:(viewWidth,viewHeight)=>{
+        const width=Math.floor(Math.min(viewWidth*0.9,420));
+        const height=Math.floor(Math.max(110,Math.min(viewHeight*0.32,180)));
+        return {width,height};
+      },
+      aspectRatio:1.777778,
+      formatsToSupport:[
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E
+      ]
+    };
 
-    const devices=await reader.listVideoInputDevices();
-    const preferred=devices.find(d=>/back|rear|environment|trasera/i.test(d.label))||devices[devices.length-1];
+    await scanner.start(
+      {facingMode:{ideal:'environment'}},
+      config,
+      decodedText=>{
+        if(lookupInProgress) return;
+        navigator.vibrate?.(100);
+        setStatus('Código detectado: '+decodedText);
+        lookup(decodedText);
+      },
+      ()=>{}
+    );
 
-    await reader.decodeFromVideoDevice(preferred?.deviceId,videoEl,(result)=>{
-      if(result){
-        const text=result.getText();
-        navigator.vibrate?.(80);
-        lookup(text);
-      }
-    });
+    setStatus('Apuntá el código de barras dentro del recuadro.');
   }catch(err){
     console.error(err);
-    stopScanner();
-    setStatus('No pude abrir la cámara. Verificá el permiso del navegador.',true);
+    await stopScanner();
+    const detail=err?.message||String(err||'');
+    setStatus('No pude iniciar la cámara. '+(detail?detail:'Verificá el permiso de cámara.'),true);
   }
 }
 
-function stopScanner(){
-  if(reader){
-    try{reader.reset()}catch{}
-    reader=null;
-  }
-  if(videoEl){
-    try{videoEl.pause()}catch{}
-    videoEl.srcObject=null;
-    videoEl=null;
+async function stopScanner(){
+  if(scanner){
+    try{
+      if(scanning) await scanner.stop();
+    }catch(err){
+      console.warn(err);
+    }
+    try{scanner.clear()}catch{}
+    scanner=null;
   }
   scanning=false;
   els.scanBtn.hidden=false;
@@ -167,6 +182,10 @@ els.scanBtn.addEventListener('click',startScanner);
 els.stopBtn.addEventListener('click',stopScanner);
 els.searchBtn.addEventListener('click',()=>lookup(els.input.value));
 els.input.addEventListener('keydown',e=>{if(e.key==='Enter') lookup(els.input.value)});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden && scanning) stopScanner();
+});
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
