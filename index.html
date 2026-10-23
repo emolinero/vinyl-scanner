@@ -14,8 +14,14 @@
     <header>
       <p class="eyebrow">Colección de Checho</p>
       <h1>Vinyl Scanner</h1>
-      <p class="lede">Escaneá el EAN/UPC del disco para buscar ediciones compatibles.</p>
+      <p class="lede">Identificá la edición específica de un vinilo y usá esos datos para encontrarla en Discogs.</p>
     </header>
+
+    <section class="mode-card card">
+      <span class="mode-label">Modo activo</span>
+      <strong>Catalogar mi colección</strong>
+      <p>Escaneá una copia que ya tenés. Elegí la edición candidata más probable y abrí una búsqueda de Discogs con todos los identificadores disponibles.</p>
+    </section>
 
     <section class="card scanner-card">
       <div id="reader" class="reader" aria-label="Vista de cámara"></div>
@@ -37,6 +43,7 @@
     </section>
 
     <p id="status" class="status" role="status"></p>
+    <section id="selectedEdition" class="selected-edition" hidden></section>
     <section id="results" class="results" aria-live="polite"></section>
   </main>
 
@@ -50,11 +57,15 @@
         <span class="badge"></span>
       </div>
       <dl class="meta"></dl>
-      <a class="mb-link" target="_blank" rel="noreferrer">Ver en MusicBrainz ↗</a>
+      <div class="release-actions">
+        <button class="choose-edition primary-small">Elegir esta edición</button>
+        <a class="discogs-search" target="_blank" rel="noreferrer">Buscar en Discogs ↗</a>
+        <a class="mb-link" target="_blank" rel="noreferrer">MusicBrainz ↗</a>
+      </div>
     </article>
   </template>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <script src="./app.js?v=4"></script>
+  <script src="./app.js?v=5"></script>
 </body>
 </html>
