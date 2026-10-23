@@ -11,6 +11,7 @@ const els={
 
 let reader=null;
 let scanning=false;
+let videoEl=null;
 
 function setStatus(message,error=false){
   els.status.textContent=message||'';
@@ -119,9 +120,20 @@ async function startScanner(){
     els.stopBtn.hidden=false;
     setStatus('Apuntá la cámara al código de barras.');
 
+    els.reader.innerHTML='';
+    videoEl=document.createElement('video');
+    videoEl.setAttribute('playsinline','');
+    videoEl.setAttribute('muted','');
+    videoEl.autoplay=true;
+    videoEl.style.width='100%';
+    videoEl.style.height='100%';
+    videoEl.style.objectFit='cover';
+    els.reader.appendChild(videoEl);
+
     const devices=await reader.listVideoInputDevices();
     const preferred=devices.find(d=>/back|rear|environment|trasera/i.test(d.label))||devices[devices.length-1];
-    await reader.decodeFromVideoDevice(preferred?.deviceId,null,(result)=>{
+
+    await reader.decodeFromVideoDevice(preferred?.deviceId,videoEl,(result)=>{
       if(result){
         const text=result.getText();
         navigator.vibrate?.(80);
@@ -139,6 +151,11 @@ function stopScanner(){
   if(reader){
     try{reader.reset()}catch{}
     reader=null;
+  }
+  if(videoEl){
+    try{videoEl.pause()}catch{}
+    videoEl.srcObject=null;
+    videoEl=null;
   }
   scanning=false;
   els.scanBtn.hidden=false;
