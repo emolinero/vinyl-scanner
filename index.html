@@ -19,6 +19,10 @@
 
     <section class="card scanner-card">
       <div id="reader" class="reader" aria-label="Vista de cámara"></div>
+      <div id="cameraPicker" class="camera-picker" hidden>
+        <label for="cameraSelect">Cámara</label>
+        <select id="cameraSelect"></select>
+      </div>
       <div class="actions">
         <button id="scanBtn" class="primary">📷 Escanear código</button>
         <button id="stopBtn" class="secondary" hidden>Detener cámara</button>
@@ -51,6 +55,6 @@
   </template>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <script src="./app.js?v=3"></script>
+  <script src="./app.js?v=4"></script>
 </body>
 </html>
