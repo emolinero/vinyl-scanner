@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#151515" />
+  <meta name="description" content="Escáner de vinilos por código de barras" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Vinyl Scanner</title>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">Colección de Checho</p>
+      <h1>Vinyl Scanner</h1>
+      <p class="lede">Escaneá el EAN/UPC del disco para buscar ediciones compatibles.</p>
+    </header>
+
+    <section class="card scanner-card">
+      <div id="reader" class="reader" aria-label="Vista de cámara"></div>
+      <div class="actions">
+        <button id="scanBtn" class="primary">📷 Escanear código</button>
+        <button id="stopBtn" class="secondary" hidden>Detener cámara</button>
+      </div>
+      <div class="manual">
+        <label for="barcodeInput">O ingresá el código manualmente</label>
+        <div class="input-row">
+          <input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="Ej. 802644899618" />
+          <button id="searchBtn">Buscar</button>
+        </div>
+      </div>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+    <section id="results" class="results" aria-live="polite"></section>
+  </main>
+
+  <template id="releaseTemplate">
+    <article class="card release">
+      <div class="release-head">
+        <div>
+          <p class="artist"></p>
+          <h2 class="title"></h2>
+        </div>
+        <span class="badge"></span>
+      </div>
+      <dl class="meta"></dl>
+      <a class="mb-link" target="_blank" rel="noreferrer">Ver en MusicBrainz ↗</a>
+    </article>
+  </template>
+
+  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
